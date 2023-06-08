@@ -207,6 +207,7 @@ void Estimator::inputIMU(double t, const Vector3d &linearAcceleration, const Vec
     if (solver_flag == NON_LINEAR)
     {
         mPropagate.lock();
+        // TODO 这里只是输出了一个很大的值,之后优化过的值会进行覆盖
         fastPredictIMU(t, linearAcceleration, angularVelocity);
         pubLatestOdometry(latest_P, latest_Q, latest_V, t);
         mPropagate.unlock();
@@ -451,6 +452,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
         }
     }
 
+    // 初始化的时候，只有当窗口满了，才会把状态改为NON_LINEAR
     if (solver_flag == INITIAL)
     {
         // monocular + IMU initilization
@@ -1024,6 +1026,7 @@ void Estimator::optimization()
 
     for (int i = 0; i < NUM_OF_CAM; i++)
     {
+        // 这里应该是为了四元数的格式
         ceres::LocalParameterization *local_parameterization = new PoseLocalParameterization();
         problem.AddParameterBlock(para_Ex_Pose[i], SIZE_POSE, local_parameterization);
         if ((ESTIMATE_EXTRINSIC && frame_count == WINDOW_SIZE && Vs[0].norm() > 0.2) || openExEstimation)
@@ -1042,6 +1045,7 @@ void Estimator::optimization()
     if (!ESTIMATE_TD || Vs[0].norm() < 0.2)
         problem.SetParameterBlockConstant(para_Td[0]);
 
+    // 这里加的是先验信息约束
     if (last_marginalization_info && last_marginalization_info->valid)
     {
         // construct new marginlization_factor
@@ -1137,6 +1141,7 @@ void Estimator::optimization()
         return;
     
     TicToc t_whole_marginalization;
+    // 这里是进行真正的边缘化操作
     if (marginalization_flag == MARGIN_OLD)
     {
         MarginalizationInfo *marginalization_info = new MarginalizationInfo();
