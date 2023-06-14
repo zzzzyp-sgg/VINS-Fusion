@@ -34,6 +34,7 @@ void img0_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     m_buf.lock();
     img0_buf.push(img_msg);
+    // printf("img0 number is %i", img0_buf.size());
     m_buf.unlock();
 }
 
@@ -41,6 +42,7 @@ void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
 {
     m_buf.lock();
     img1_buf.push(img_msg);
+    // printf("img1 number is %i", img1_buf.size());
     m_buf.unlock();
 }
 
@@ -248,6 +250,8 @@ int main(int argc, char **argv)
     ROS_WARN("waiting for image and imu...");
 
     registerPub(n);
+
+
 
     ros::Subscriber sub_imu;
     if(USE_IMU)
